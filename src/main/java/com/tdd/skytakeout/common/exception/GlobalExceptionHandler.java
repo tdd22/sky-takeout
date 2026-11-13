@@ -4,6 +4,7 @@ import com.tdd.skytakeout.common.response.ApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -54,5 +55,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .internalServerError()
                 .body(ApiResponse.error(50000, "服务器内部错误"));
+    }
+
+    @ExceptionHandler(BindException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBindException(
+            BindException exception
+    ) {
+        String message = "请求参数不正确";
+
+        if (exception.getBindingResult().getFieldError() != null) {
+            message = exception.getBindingResult()
+                    .getFieldError()
+                    .getDefaultMessage();
+        }
+
+        return ResponseEntity
+                .badRequest()
+                .body(ApiResponse.error(40000, message));
     }
 }
